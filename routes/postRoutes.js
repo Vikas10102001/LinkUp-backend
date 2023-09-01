@@ -3,7 +3,7 @@ const authController = require("../controller/authController");
 const postController = require("../controller/postController");
 const router = express.Router();
 
-router.get("/", postController.getPosts);
+router.get("/", postController.getPosts);//need to be admin
 router.use(authController.protect);
 router
   .route("/")

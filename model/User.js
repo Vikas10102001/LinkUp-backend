@@ -19,10 +19,6 @@ const userSchema = Mongoose.Schema(
       type: String,
       default: " ",
     },
-    coverImage: {
-      type: String,
-      default: " ",
-    },
     role: {
       type: String,
       default: "user",
@@ -60,27 +56,14 @@ const userSchema = Mongoose.Schema(
       type: Boolean,
       default: false,
     },
-    requests: [{ type: Mongoose.Schema.ObjectId, ref: "User" }],
     active: {
       type: Boolean,
       default: true,
     },
     about: [
       {
-        birthday: Date,
-        relationship: {
-          type: String,
-          enum: ["Single", "Married"],
-        },
-        address: {
-          type: String,
-        },
-        profession: {
-          type: String,
-        },
-        hobbies: {
-          type: String,
-        },
+        type: Mongoose.Schema.ObjectId,
+        ref: "About",
       },
     ],
   },

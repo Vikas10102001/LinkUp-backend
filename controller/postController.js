@@ -3,6 +3,7 @@ const catchAsync = require("../utils/catchAsync");
 const multer = require("multer");
 const sharp = require("sharp");
 const User = require("../model/User");
+const AppError = require("../utils/appError");
 
 const multerStorage = multer.memoryStorage();
 
@@ -13,29 +14,40 @@ const multerFilter = (req, file, cb) => {
     cb(new AppError(400, "Not an image ! Please upload an image"), false);
   }
 };
+
 const upload = multer({ storage: multerStorage, filter: multerFilter });
 
 exports.uploadPostPhoto = upload.single("photo");
 
-exports.resizePostPhoto = (req, res, next) => {
+exports.resizePostPhoto = async (req, res, next) => {
   if (!req.file) next();
   else {
     req.file.filename = `user-post-${
       Date.now().toString(36) + Math.random().toString(36).substring(2)
     }.jpeg`;
-    sharp(req.file.buffer)
-      .resize(1000, 1000)
-      .toFormat("jpeg")
-      .jpeg({ quality: 100 })
-      .toFile(`public/img/posts/${req.file.filename}`);
+    try {
+      const resizedBuffer = await sharp(req.file.buffer)
+        .resize(1000, 1000)
+        .toFormat("jpeg")
+        .jpeg({ quality: 100 })
+        .toBuffer();
+
+      req.postData = resizedBuffer; //image in form of binary data
+    } catch (er) {
+      console.error("Error resizing image:", err);
+      next(new AppError(400, "Error resizing image"));
+      return;
+    }
+
     next();
   }
 };
 
 exports.createPost = catchAsync(async (req, res, next) => {
+  console.log(req.postData);
   const post = await Post.create({
     ...req.body,
-    photo: req.file.filename,
+    postData: req.postData,
     user: req.user.id,
   });
 
@@ -109,13 +121,15 @@ exports.unlikePost = catchAsync(async (req, res, next) => {
 
 //get post for a user
 exports.userFeedPosts = catchAsync(async (req, res, next) => {
+  console.log("here");
   const user = await User.findById(req.user.id);
   const posts = await Post.find({
     user: { $in: [...user.followings, req.user.id] },
-  }).populate({ 
+  }).populate({
     path: "user",
     select: "username profile",
   });
+  console.log(posts);
   res.status(200).json({
     status: "success",
     posts,

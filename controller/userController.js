@@ -2,6 +2,7 @@ const User = require("../model/User");
 const AppError = require("../utils/appError");
 const catchAsync = require("../utils/catchAsync");
 
+
 //getUser
 exports.getUser = catchAsync(async (req, res, next) => {
   const users = await User.find();
@@ -10,6 +11,22 @@ exports.getUser = catchAsync(async (req, res, next) => {
     users,
   });
 });
+
+//get user profile
+exports.getSingleUser=catchAsync(async(req,res,next)=>{
+  const id=req.params.id;
+  const user=await User.findById(id).populate('about');
+  res.status(200).json({
+    status:"success",
+    user
+  })
+
+})
+
+// //update me
+// exports.updateMe=catchAsync(async(req,res,next)=>{
+
+// })
 
 //follow User
 exports.followUser = catchAsync(async (req, res, next) => {

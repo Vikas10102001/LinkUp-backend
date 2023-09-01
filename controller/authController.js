@@ -32,7 +32,6 @@ exports.login = catchAsync(async (req, res, next) => {
 });
 
 exports.protect = catchAsync(async (req, res, next) => {
-  // console.log(req.cookies)
   let token;
   if (
     req.headers.authorization &&
@@ -44,13 +43,15 @@ exports.protect = catchAsync(async (req, res, next) => {
   } else if (req.body.token) {
     token = req.body.token;
   }
-  if (!token) return next(new AppError(401, "Please login to get access"));
-
+  if (!token) return next(new AppError(401, "Please login to get access"))
   const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
   const currentUser = await User.findById(decoded.id);
 
+  console.log(currentUser);
   if (!currentUser)
-    return next(new AppError(404,"The user belonging to this token does not exist"));
+    return next(
+      new AppError(404, "The user belonging to this token does not exist")
+    );
 
   req.user = currentUser;
   next();

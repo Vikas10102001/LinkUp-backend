@@ -4,30 +4,29 @@ const postSchema = mongoose.Schema(
     caption: {
       type: String,
     },
-    photo: {
-      type: String,
-      required: [true, "A post must have a photo"],
+    postData: {
+      type: Buffer,
+      required: [true, "A post must have a photo or a video"],
     },
     user: {
       type: mongoose.Schema.ObjectId,
       ref: "User",
+      required: [true, "A post must belong to a user"],
     },
-    Likes: [{ type: mongoose.Schema.ObjectId, ref: "User" }],
-    Hearts: [{ type: mongoose.Schema.ObjectId, ref: "User" }],
     tags: [{ type: mongoose.Schema.ObjectId, ref: "User" }],
   },
   {
     timeStamps: true,
-    toJSON: { virtuals: true }, 
+    toJSON: { virtuals: true },
     toObject: { virtuals: true },
   }
 );
 
-postSchema.virtual('comments',{
-  ref:'Comment',
-  foreignField:'post',
-  localField:'_id'
-})
+postSchema.virtual("comments", {
+  ref: "Comment",
+  foreignField: "post",
+  localField: "_id",
+});
 
 const Post = mongoose.model("Post", postSchema);
 
