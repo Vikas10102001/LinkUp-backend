@@ -69,7 +69,6 @@ exports.searchUser = catchAsync(async (req, res, next) => {
   const users = await User.find({
     username: new RegExp(`^${searchQuery}`, "i"),
   });
-  console.log(users);
   res.status(200).json({
     status: "success",
     users,
