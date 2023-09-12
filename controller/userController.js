@@ -2,7 +2,6 @@ const User = require("../model/User");
 const AppError = require("../utils/appError");
 const catchAsync = require("../utils/catchAsync");
 
-
 //getUser
 exports.getUser = catchAsync(async (req, res, next) => {
   const users = await User.find();
@@ -13,15 +12,14 @@ exports.getUser = catchAsync(async (req, res, next) => {
 });
 
 //get user profile
-exports.getSingleUser=catchAsync(async(req,res,next)=>{
-  const id=req.params.id;
-  const user=await User.findById(id).populate('about');
+exports.getSingleUser = catchAsync(async (req, res, next) => {
+  const id = req.params.id;
+  const user = await User.findById(id).populate("about");
   res.status(200).json({
-    status:"success",
-    user
-  })
-
-})
+    status: "success",
+    user,
+  });
+});
 
 // //update me
 // exports.updateMe=catchAsync(async(req,res,next)=>{
@@ -62,5 +60,18 @@ exports.unfollowUser = catchAsync(async (req, res, next) => {
   res.status(200).json({
     status: "success",
     message: "user unfollowed",
+  });
+});
+
+//Search a user
+exports.searchUser = catchAsync(async (req, res, next) => {
+  const searchQuery = req.query.q;
+  const users = await User.find({
+    username: new RegExp(`^${searchQuery}`, "i"),
+  });
+  console.log(users);
+  res.status(200).json({
+    status: "success",
+    users,
   });
 });
