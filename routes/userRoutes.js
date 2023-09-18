@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const authController = require("../controller/authController");
 const userController = require("../controller/userController");
+const aboutController = require("../controller/aboutController");
 
 //signUp
 router.route("/signup").post(authController.signUp);
@@ -20,3 +21,11 @@ router
   .route("/:userId/unFollow")
   .patch(authController.protect, userController.unfollowUser);
 module.exports = router;
+
+//about routes
+router.use(authController.protect);
+router
+  .route("/about")
+  .get(aboutController.getAbout)
+  .post(aboutController.createAbout)
+  .patch(aboutController.updateAbout);

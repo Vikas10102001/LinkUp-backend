@@ -3,6 +3,7 @@ const Post = require("../model/Post");
 const AppError = require("../utils/appError");
 const catchAsync = require("../utils/catchAsync");
 
+//Creating a comment
 exports.createComment = catchAsync(async (req, res, next) => {
   const post = await Post.findById(req.body.post);
   if (!post) return next(new AppError(404, "post deleted by the user"));

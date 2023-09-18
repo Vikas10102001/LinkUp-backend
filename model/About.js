@@ -1,16 +1,20 @@
 const mongoose = require("mongoose");
 
-const requestSchema = mongoose.Schema(
+const aboutSchema = mongoose.Schema(
   {
     user: {
       type: mongoose.Schema.ObjectId,
       ref: "User",
       required: [true, "about should be of a user"],
+      immutable: true,
+    },
+    description: {
+      type: String,
     },
     birthday: Date,
     relationship: {
       type: String,
-      enum: ["Single", "Married"],
+      enum: ["SINGLE", "MARRIED"],
     },
     address: {
       type: String,
@@ -27,6 +31,6 @@ const requestSchema = mongoose.Schema(
   }
 );
 
-const Comment = mongoose.model("Comment", requestSchema);
+const About = mongoose.model("About", aboutSchema);
 
-module.exports = Comment;
+module.exports = About;
