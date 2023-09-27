@@ -121,7 +121,6 @@ exports.unlikePost = catchAsync(async (req, res, next) => {
 
 //get post for a user
 exports.userFeedPosts = catchAsync(async (req, res, next) => {
-  console.log("here");
   const user = await User.findById(req.user.id);
   const posts = await Post.find({
     user: { $in: [...user.followings, req.user.id] },
@@ -129,7 +128,6 @@ exports.userFeedPosts = catchAsync(async (req, res, next) => {
     path: "user",
     select: "username profile",
   });
-  console.log(posts);
   res.status(200).json({
     status: "success",
     posts,
