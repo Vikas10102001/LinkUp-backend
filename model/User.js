@@ -14,10 +14,16 @@ const userSchema = Mongoose.Schema(
       unique: true,
       required: [true, "Please give your email address"],
       validator: [validator.isEmail, "Enter a valid email address"],
+      immutable: true,
+    },
+    uid: {
+      type: String,
+      unique: true,
+      immutable: true,
     },
     profile: {
       type: String,
-      default: " ",
+      default: null,
     },
     role: {
       type: String,
@@ -40,18 +46,6 @@ const userSchema = Mongoose.Schema(
         message: "Password not matched",
       },
     },
-    followers: [
-      {
-        type: Mongoose.Schema.ObjectId,
-        ref: "User",
-      },
-    ],
-    followings: [
-      {
-        type: Mongoose.Schema.ObjectId,
-        ref: "User",
-      },
-    ],
     private: {
       type: Boolean,
       default: false,
@@ -60,12 +54,9 @@ const userSchema = Mongoose.Schema(
       type: Boolean,
       default: true,
     },
-    about: [
-      {
-        type: Mongoose.Schema.ObjectId,
-        ref: "About",
-      },
-    ],
+    description: {
+      type: String,
+    },
   },
   {
     timeStamps: true,
@@ -83,6 +74,7 @@ userSchema.pre("save", async function (next) {
   if (!this.isModified("password")) return next();
   this.password = await bcrypt.hash(this.password, 12);
   this.passwordConfirm = undefined;
+  this.uid = this.email.split("@")[0];
   next();
 });
 
