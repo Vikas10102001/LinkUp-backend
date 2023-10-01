@@ -1,6 +1,33 @@
+const multer = require("multer");
+const sharp = require("sharp");
 const User = require("../model/User");
 const AppError = require("../utils/appError");
 const catchAsync = require("../utils/catchAsync");
+
+const multerStorage = multer.memoryStorage();
+const multerFilter = (req, file, cb) => {
+  if (file.mimetype.startsWith("image")) {
+    cb(null, true);
+  } else {
+    cb(new AppError(400, "Not an image ! Please upload an image"), false);
+  }
+};
+const upload = multer({ storage: multerStorage, fileFilter: multerFilter });
+
+exports.uploadUserPhoto = upload.single("profile");
+exports.resizeUserPhoto = (req, res, next) => {
+  if (!req.file) next();
+  else {
+    req.file.filename = `user_profile-${req.user.id}.jpeg`;
+    sharp(req.file.buffer)
+      .rotate()
+      .resize(500, 500)
+      .toFormat("jpeg")
+      .jpeg({ quality: 90 })
+      .toFile(`public/img/users/${req.file.filename}`);
+    next();
+  }
+};
 
 //getUser
 exports.getUser = catchAsync(async (req, res, next) => {
@@ -13,8 +40,8 @@ exports.getUser = catchAsync(async (req, res, next) => {
 
 //get user profile
 exports.getSingleUser = catchAsync(async (req, res, next) => {
-  const id = req.params.id;
-  const user = await User.findById(id).populate("about");
+  const id = req.params.userId;
+  let user = await User.findById(id).populate("about");
   res.status(200).json({
     status: "success",
     user,
@@ -22,52 +49,40 @@ exports.getSingleUser = catchAsync(async (req, res, next) => {
 });
 
 // //update me
-// exports.updateMe=catchAsync(async(req,res,next)=>{
 
-// })
-
-//follow User
-exports.followUser = catchAsync(async (req, res, next) => {
-  const user = await User.findById(req.user.id);
-  const followUser = await User.findById(req.params.userId);
-  if (user.followings.includes(req.params.userId)) {
-    return next(new AppError(400, "You already follow him"));
-  }
-
-  if (followUser.private === true) {
-    await User.findByIdAndUpdate(req.params.userId, {
-      $push: { requests: req.user.id },
-    });
-    return res.status(201).json({ status: "success", message: "Request Sent" });
-  }
-  await User.findByIdAndUpdate(req.user.id, {
-    followings: [...user.followings, req.params.userId],
+// to do
+exports.updateUser = catchAsync(async (req, res, next) => {
+  const { email, uid, following, follower, ...updates } = req.body;
+  console.log(req.file.filename);
+  updates.profile = req.file.filename;
+  const user = await User.findByIdAndUpdate(req.user.id, updates, {
+    new: true,
   });
+  if (!user) return next(new AppError(404, "User not found"));
   res.status(201).json({
     status: "success",
-    message: "user followed",
+    data: user,
   });
 });
 
-//unfollow a user
-exports.unfollowUser = catchAsync(async (req, res, next) => {
-  const user = await User.findById(req.user.id);
-  if (!user.followings.includes(req.params.userId)) {
-    return next(new AppError(400, "You do not follow this user"));
-  }
-  user.followings.splice(user.followings.indexOf(req.params.userId), 1);
-  await user.save({ validateBeforeSave: false });
-  res.status(200).json({
-    status: "success",
-    message: "user unfollowed",
-  });
-});
 
 //Search a user
 exports.searchUser = catchAsync(async (req, res, next) => {
   const searchQuery = req.query.q;
-  const users = await User.find({
-    username: new RegExp(`^${searchQuery}`, "i"),
+  let users;
+  if (searchQuery === "") users = [];
+  else
+    users = await User.find({
+      username: new RegExp(`^${searchQuery}`, "i"),
+    });
+  users = users.map((el) => {
+    return {
+      _id: el._id,
+      username: el.username,
+      email: el.email,
+      profile: el.profile,
+      uid: el.uid,
+    };
   });
   res.status(200).json({
     status: "success",

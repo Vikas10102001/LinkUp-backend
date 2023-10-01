@@ -14,18 +14,23 @@ router.route("/").get(userController.getUser);
 //searching user
 router.route("/search").get(userController.searchUser);
 // router.route('/:id').get(getUserHandler)
-router
-  .route("/:userId/follow")
-  .patch(authController.protect, userController.followUser);
-router
-  .route("/:userId/unFollow")
-  .patch(authController.protect, userController.unfollowUser);
-module.exports = router;
-
-//about routes
 router.use(authController.protect);
 router
-  .route("/about")
-  .get(aboutController.getAbout)
-  .post(aboutController.createAbout)
-  .patch(aboutController.updateAbout);
+  .route("/:userId")
+  .get(userController.getSingleUser)
+  .patch(
+    userController.uploadUserPhoto,
+    userController.resizeUserPhoto,
+    userController.updateUser
+  );
+// router.route("/:userId/follow").patch(userController.followUser);
+// router.route("/:userId/unfollow").patch(userController.unfollowUser);
+module.exports = router;
+
+// //about routes
+// router.use(authController.protect);
+// router
+//   .route("/:userId/about")
+//   .get(aboutController.getAbout)
+//   .post(aboutController.createAbout)
+//   .patch(aboutController.updateAbout);
